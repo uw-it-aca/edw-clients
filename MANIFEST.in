@@ -1,0 +1,2 @@
+include edw_clients/VERSION
+recursive-include edw_clients *
