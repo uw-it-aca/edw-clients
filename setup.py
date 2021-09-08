@@ -26,6 +26,7 @@ setup(
         'mock',
         'pymssql==2.2.2',
         'pandas~=1.1',
+        'SQLAlchemy==1.0.14'
     ],
     license='Apache License, Version 2.0',
     description=('A library of EDW clients'),

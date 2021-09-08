@@ -3,8 +3,8 @@
 
 import logging
 import pandas as pd
-import pymssql
 from django.conf import settings
+from sqlalchemy import create_engine
 
 
 class BaseDAO():
@@ -25,6 +25,8 @@ class BaseDAO():
         password = getattr(settings, "EDW_PASSWORD")
         user = getattr(settings, "EDW_USER")
         server = getattr(settings, "EDW_SERVER")
-        conn = pymssql.connect(server, user, password, database)
+        conn_str = f'mssql+pymssql://{user}:{password}@{server}/{database}'
+        engine = create_engine(conn_str)
+        conn = engine.connect()
         logging.debug(f"Connected to {server}.{database} with user {user}")
         return conn
