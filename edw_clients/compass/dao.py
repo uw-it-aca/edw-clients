@@ -7,7 +7,7 @@ from edw_clients.base import BaseDAO
 from edw_clients.utilities import term_name_to_number
 
 
-class CompassDAO(BaseDAO):
+class EDWCompassDAO(BaseDAO):
 
     def __init__(self):
         super(BaseDAO, self).__init__()
@@ -28,7 +28,7 @@ class CompassDAO(BaseDAO):
         yrq = "".join([str(year), str(quarter_num)])
         query = sa.select([sa.text(
             f"""
-            DISTINCT TOP(50)
+            DISTINCT
                 enr.StudentNumber,
                 stu1.uw_netid as UWNetID,
                 enr.StudentName,
@@ -39,70 +39,54 @@ class CompassDAO(BaseDAO):
                 enr.Gender,
                 enr.GPA,
                 enr.TotalCredits,
-                dm.MajorFullName,
                 enr.CampusDesc,
                 enr.ClassDesc,
-                enr.EnrollStatusCode
+                enr.EnrollStatusCode,
+                smc.major_abbr,
+                smc.major_full_nm,
+                smc.major_name,
+                smc.major_short_nm
             FROM EDWPresentation.sec.EnrolledStudent AS enr
             LEFT JOIN UWSDBDataStore.sec.student_1 AS stu1 ON enr.SystemKey = stu1.system_key
-            LEFT JOIN EDWPresentation.sec.factStudentProgramEnrollment AS fspe ON fspe.StudentKeyId = enr.SystemKey
-            LEFT JOIN EDWPresentation.sec.dimMajor AS dm ON dm.MajorKeyId = fspe.MajorKeyId
-            """
+            LEFT JOIN UWSDBDataStore.sec.student_1_college_major AS cm ON enr.SystemKey = cm.system_key
+            LEFT JOIN UWSDBDataStore.sec.sr_major_code AS smc ON cm.major_abbr = smc.major_abbr AND cm.pathway = smc.major_pathway
+            """  # noqa
         )])
         query = query.where(sa.text(f"AcademicYrQtr = '{yrq}'"))
-        query = query.where(sa.text(f"dm.MajorFullName IS NOT NULL"))
-        if filters and filters.get("searchFilter"):
-            filter_text = filters["searchFilter"]["filterText"]
-            filter_type = filters["searchFilter"]["filterType"]
-            if filter_type == "student-number":
-                query = query.where(
-                    sa.text(f"StudentNumber LIKE '%{filter_text}%'"))
-            elif filter_type == "student-name":
-                query = query.where(
-                    sa.text(f"UPPER(enr.StudentName) LIKE "
-                            f"'UPPER('%{filter_text}%'"))
-            elif filter_type == "student-email":
-                query = query.where(
-                    sa.text(f"UPPER(enr.StudentEmail) LIKE "
-                            f"UPPER('%{filter_text}%')"))
         return query.cte('student_info')
+
+    def get_number_enrolled_students(self, sis_term_id):
+        cte = self.get_enrolled_students_cte(sis_term_id)
+        query = sa.select([
+            sa.text('COUNT(StudentNumber)')]).select_from(cte)
+        conn = self.get_connection()
+        return conn.execute(query).scalar()
 
     def get_enrolled_students_df(self, sis_term_id, filters=None):
         cte = self.get_enrolled_students_cte(sis_term_id, filters=filters)
         query = (
             sa.select([
-                'StudentNumber',
-                'UWNetID',
-                'StudentName',
-                'BirthDate',
-                'StudentEmail',
-                'ExternalEmail',
-                'LocalPhoneNumber',
-                'Gender',
-                'GPA',
-                'TotalCredits',
-                'CampusDesc',
-                'ClassDesc',
-                'EnrollStatusCode',
-                "STRING_AGG(MajorFullName, ', ') AS MajorDesc"
+                sa.column('StudentNumber'),
+                sa.column('UWNetID'),
+                sa.column('StudentName'),
+                sa.column('BirthDate'),
+                sa.column('StudentEmail'),
+                sa.column('ExternalEmail'),
+                sa.column('LocalPhoneNumber'),
+                sa.column('Gender'),
+                sa.column('GPA'),
+                sa.column('TotalCredits'),
+                sa.column('CampusDesc'),
+                sa.column('ClassDesc'),
+                sa.column('EnrollStatusCode'),
+                sa.column('major_abbr'),
+                sa.column('major_full_nm'),
+                sa.column('major_name'),
+                sa.column('major_short_nm')
             ])
             .select_from(cte)
-            .group_by(
-                'StudentNumber',
-                'UWNetID',
-                'StudentName',
-                'BirthDate',
-                'StudentEmail',
-                'ExternalEmail',
-                'LocalPhoneNumber',
-                'Gender',
-                'GPA',
-                'TotalCredits',
-                'CampusDesc',
-                'ClassDesc',
-                'EnrollStatusCode')
             .order_by('StudentName')
         )
-        conn = self.get_connection("EDWPresentation")
+        conn = self.get_connection()
         enrolled_df = pd.read_sql(query, conn)
         return enrolled_df

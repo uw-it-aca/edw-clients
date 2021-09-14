@@ -21,12 +21,12 @@ class BaseDAO():
         pd.options.display.precision = 3
         pd.options.display.float_format = '{:.3f}'.format
 
-    def get_connection(self, database):
+    def get_connection(self):
         password = getattr(settings, "EDW_PASSWORD")
         user = getattr(settings, "EDW_USER")
         server = getattr(settings, "EDW_SERVER")
-        conn_str = f'mssql+pymssql://{user}:{password}@{server}/{database}'
+        conn_str = f'mssql+pymssql://{user}:{password}@{server}'
         engine = create_engine(conn_str)
         conn = engine.connect()
-        logging.debug(f"Connected to {server}.{database} with user {user}")
+        logging.debug(f"Connected to {server} with user {user}")
         return conn
