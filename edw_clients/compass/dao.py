@@ -32,6 +32,9 @@ class EDWCompassDAO(BaseDAO):
                 enr.StudentNumber,
                 stu1.uw_netid as UWNetID,
                 enr.StudentName,
+                enr.StudentNamePreferredFirst,
+                enr.StudentNamePreferredMiddle,
+                enr.StudentNamePreferredLast,
                 enr.BirthDate,
                 enr.StudentEmail,
                 enr.ExternalEmail,
@@ -39,17 +42,32 @@ class EDWCompassDAO(BaseDAO):
                 enr.Gender,
                 enr.GPA,
                 enr.TotalCredits,
+                enr.TotalUWCredits,
                 enr.CampusDesc,
                 enr.ClassDesc,
                 enr.EnrollStatusCode,
+                enr.SpecialProgramCode, 
+                enr.SpecialProgramDesc,
+                enr.HonorsProgramCode,
+                enr.ResidentDesc,
+                enr.PermAddrLine1,
+                enr.PermAddrLine2,
+                enr.PermAddrCity,
+                enr.PermAddrState,
+                enr.PermAddr5DigitZip,
+                enr.PermAddr4DigitZip,
+                enr.PermAddrCountry,
+                enr.PermAddrPostalCode,
+                enr.Major1,
                 smc.major_abbr,
                 smc.major_full_nm,
                 smc.major_name,
-                smc.major_short_nm
+                smc.major_short_nm,
+                enr.IntendedMajor1
             FROM EDWPresentation.sec.EnrolledStudent AS enr
             LEFT JOIN UWSDBDataStore.sec.student_1 AS stu1 ON enr.SystemKey = stu1.system_key
             LEFT JOIN UWSDBDataStore.sec.student_1_college_major AS cm ON enr.SystemKey = cm.system_key
-            LEFT JOIN UWSDBDataStore.sec.sr_major_code AS smc ON cm.major_abbr = smc.major_abbr AND cm.pathway = smc.major_pathway
+            LEFT JOIN UWSDBDataStore.sec.sr_major_code AS smc ON cm.major_abbr = smc.major_abbr AND smc.major_pathway = cm.pathway
             """  # noqa
         )])
         query = query.where(sa.text(f"AcademicYrQtr = '{yrq}'"))
@@ -69,6 +87,9 @@ class EDWCompassDAO(BaseDAO):
                 sa.column('StudentNumber'),
                 sa.column('UWNetID'),
                 sa.column('StudentName'),
+                sa.column('StudentNamePreferredFirst'),
+                sa.column('StudentNamePreferredMiddle'),
+                sa.column('StudentNamePreferredLast'),
                 sa.column('BirthDate'),
                 sa.column('StudentEmail'),
                 sa.column('ExternalEmail'),
@@ -76,13 +97,28 @@ class EDWCompassDAO(BaseDAO):
                 sa.column('Gender'),
                 sa.column('GPA'),
                 sa.column('TotalCredits'),
+                sa.column('TotalUWCredits'),
                 sa.column('CampusDesc'),
                 sa.column('ClassDesc'),
                 sa.column('EnrollStatusCode'),
+                sa.column('SpecialProgramCode'), 
+                sa.column('SpecialProgramDesc'),
+                sa.column('HonorsProgramCode'),
+                sa.column('ResidentDesc'),
+                sa.column('PermAddrLine1'),
+                sa.column('PermAddrLine2'),
+                sa.column('PermAddrCity'),
+                sa.column('PermAddrState'),
+                sa.column('PermAddr5DigitZip'),
+                sa.column('PermAddr4DigitZip'),
+                sa.column('PermAddrCountry'),
+                sa.column('PermAddrPostalCode'),
+                sa.column('Major1'),
                 sa.column('major_abbr'),
                 sa.column('major_full_nm'),
                 sa.column('major_name'),
-                sa.column('major_short_nm')
+                sa.column('major_short_nm'),
+                sa.column('IntendedMajor1')
             ])
             .select_from(cte)
             .order_by('StudentName')
