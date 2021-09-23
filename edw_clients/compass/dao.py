@@ -43,12 +43,18 @@ class EDWCompassDAO(BaseDAO):
                 enr.GPA,
                 enr.TotalCredits,
                 enr.TotalUWCredits,
+                enr.CampusCode,
                 enr.CampusDesc,
+                enr.ClassCode,
                 enr.ClassDesc,
                 enr.EnrollStatusCode,
+                enr.ExemptionCode,
+                enr.ExemptionDesc,
                 enr.SpecialProgramCode, 
                 enr.SpecialProgramDesc,
                 enr.HonorsProgramCode,
+                enr.HonorsProgramInd,
+                enr.ResidentCode,
                 enr.ResidentDesc,
                 enr.PermAddrLine1,
                 enr.PermAddrLine2,
@@ -63,7 +69,8 @@ class EDWCompassDAO(BaseDAO):
                 smc.major_full_nm,
                 smc.major_name,
                 smc.major_short_nm,
-                enr.IntendedMajor1
+                enr.IntendedMajor1,
+                enr.RegisteredInQuarter
             FROM EDWPresentation.sec.EnrolledStudent AS enr
             LEFT JOIN UWSDBDataStore.sec.student_1 AS stu1 ON enr.SystemKey = stu1.system_key
             LEFT JOIN UWSDBDataStore.sec.student_1_college_major AS cm ON enr.SystemKey = cm.system_key
@@ -98,12 +105,18 @@ class EDWCompassDAO(BaseDAO):
                 sa.column('GPA'),
                 sa.column('TotalCredits'),
                 sa.column('TotalUWCredits'),
+                sa.column('CampusCode'),
                 sa.column('CampusDesc'),
+                sa.column('ClassCode'),
                 sa.column('ClassDesc'),
                 sa.column('EnrollStatusCode'),
+                sa.column('ExemptionCode'),
+                sa.column('ExemptionDesc'),
                 sa.column('SpecialProgramCode'), 
                 sa.column('SpecialProgramDesc'),
                 sa.column('HonorsProgramCode'),
+                sa.column('HonorsProgramInd'),
+                sa.column('ResidentCode'),
                 sa.column('ResidentDesc'),
                 sa.column('PermAddrLine1'),
                 sa.column('PermAddrLine2'),
@@ -118,7 +131,8 @@ class EDWCompassDAO(BaseDAO):
                 sa.column('major_full_nm'),
                 sa.column('major_name'),
                 sa.column('major_short_nm'),
-                sa.column('IntendedMajor1')
+                sa.column('IntendedMajor1'),
+                sa.column('RegisteredInQuarter')
             ])
             .select_from(cte)
             .order_by('StudentName')
